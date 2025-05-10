@@ -1,0 +1,48 @@
+name: Minarca-client
+
+on:
+  pull_request:
+    branches: [ "main" ]
+
+  workflow_dispatch:
+
+env:
+  RELEASE_TAG: 6.1.0a3
+
+jobs:
+  test:
+    runs-on: ubuntu-22.04-arm
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          sudo apt install python2 librsync-dev libacl1-dev git xvfb xauth cron zenity kdialog -y
+
+      - name: Install tox
+        run: pip install tox
+
+      - name: Clone minarca client
+        run: |
+          git clone https://gitlab.com/ikus-soft/minarca.git
+          cd minarca
+          git checkout ${{ env.RELEASE_TAG }}
+
+      - name: Patch minarca client for arm64
+        run: |
+          cd minarca
+          sed -i "s/architecture='amd64'/architecture='arm64'/g" packaging/minarca.spec
+          sed -i '/^\s*import os\s*$/d' minarca_client/core/notification/tests/test_notification.py
+          sed -i "s|NO_DBUS = not os.environ.get('DBUS_SESSION_BUS_ADDRESS', False)|NO_DBUS = True|" minarca_client/core/notification/tests/test_notification.py
+
+      - name: Build and run tests
+        run: |
+          cd minarca
+          tox -e flake8,black,isort
+          tox -e py3-linux
+        
+      
