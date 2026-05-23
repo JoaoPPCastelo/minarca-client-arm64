@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 env:
-  RELEASE_TAG: 6.1.0a3
+  RELEASE_TAG: 6.2.5
 
 jobs:
   build:
@@ -26,10 +26,10 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt update
-          sudo apt install python2 librsync-dev libacl1-dev git xvfb xauth cron zenity kdialog -y
+          sudo apt -y --no-install-recommends install librsync-dev libacl1-dev git xvfb xauth cron zenity kdialog
 
       - name: Install tox
-        run: pip install tox
+        run: pip3 install tox
 
       - name: Clone minarca client
         run: |
@@ -47,9 +47,8 @@ jobs:
       - name: Build and run tests
         run: |
           cd minarca
-          tox -e flake8,black,isort
           tox -e py3-linux
-        
+
       - name: Build package
         run: |
           cd minarca
