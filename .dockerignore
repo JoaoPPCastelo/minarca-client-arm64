@@ -1,0 +1,8 @@
+dist/
+.git/
+.github/
+*.deb
+.DS_Store
+README.md
+CHANGELOG.md
+.releaserc
